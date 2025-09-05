@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Logo from "@/components/ui/logo"
+import { MobileHeader } from "@/components/ui/mobile-header"
 import {
   CreditCard,
   Download,
@@ -173,39 +174,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-4">
-                <Logo />
-                <span className="text-lg font-bold">Fake Detector</span>
-              </Link>
-              <Badge variant="secondary" className="text-xs">
-                Welcome, {session.user?.name || session.user?.email}
-              </Badge>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-                <Wallet className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold">{stats.pointsBalance} points</span>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSignOut}
-                className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all duration-300 hover:shadow-sm"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Mobile-Optimized Header */}
+      <MobileHeader showDashboardButton={false} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -325,7 +295,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-600">Daily points already claimed! 🎉</p>
+          <p className="text-gray-600">Daily points already claimed</p>
                   <p className="text-sm text-gray-500">Come back tomorrow for 5 more points.</p>
                 </div>
               )}

@@ -292,14 +292,14 @@ export function UploadForm() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-2 gradient-text">Scan Your Product</h1>
-        <p className="text-gray-600 mb-4">Upload photos from all angles for accurate detection</p>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 gradient-text">Scan Your Product</h1>
+        <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">Upload photos from all angles for accurate detection</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-blue-600">🔍</span>
-            <span className="font-medium text-blue-800">Professional NAFDAC Database Verification</span>
+            <span className="font-medium text-blue-800 text-sm sm:text-base">Professional NAFDAC Database Verification</span>
           </div>
           <p className="text-sm text-blue-700">
             Each scan uses advanced AI to check your product against the official NAFDAC database for counterfeit detection.
@@ -489,9 +489,9 @@ export function UploadForm() {
                       <div className="text-lg font-bold text-blue-600">
                         {aiAnalysis.result.processingTime}ms ⚡
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {aiAnalysis.result.processingTime < 1000 ? 'Excellent speed!' :
-                         aiAnalysis.result.processingTime < 2000 ? 'Good performance!' : 'Processing...'}
+                    <div className="text-xs text-gray-500 mt-1">
+                        {aiAnalysis.result.processingTime < 1000 ? 'Excellent speed' :
+                         aiAnalysis.result.processingTime < 2000 ? 'Good performance' : 'Processing...'}
                       </div>
                     </div>
 
