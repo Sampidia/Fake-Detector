@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Performance optimization settings
+  directUrl = env("DATABASE_URL") // For migrations
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @db.VarChar(255)
+  type              String  @db.VarChar(50)
+  provider          String  @db.VarChar(50)
+  providerAccountId String  @db.VarChar(255)
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  // Relations
+  user User @relation("AccountToUser")
+
+  // Performance indexes
+  @@index([userId])
+  @@index([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @db.VarChar(500)
+  userId       String   @db.VarChar(255)
+  expires      DateTime @db.Timestamptz(6)
+
+  // Relations
+  user User @relation("SessionToUser")
+
+  // Performance indexes
+  @@index([sessionToken])
+  @@index([userId])
+  @@index([expires])
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  name                 String?   @db.VarChar(255)
+  email                String    @unique @db.VarChar(255)
+  emailVerified        DateTime? @db.Timestamptz(6)
+  image                String?   @db.Text
+  pointsBalance        Int       @default(5)
+  dailyPointsLastGiven String    @default("") @db.VarChar(20)
+  createdAt            DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime  @updatedAt @db.Timestamptz(6)
+  onboardingComplete   Boolean   @default(false)
+
+  // Relations
+  accounts      Account[]      @relation("AccountToUser")
+  sessions      Session[]      @relation("SessionToUser")
+  productChecks ProductCheck[] @relation("ProductCheckToUser")
+  checkResults  CheckResult[]  @relation("CheckResultToUser")
+  payments      Payment[]      @relation("PaymentToUser")
+
+  // Performance indexes - critical for user lookups and updates
+  @@index([email])
+  @@index([createdAt])
+  @@index([pointsBalance])
+  @@index([dailyPointsLastGiven])
+  @@index([onboardingComplete])
+}
+
+model ScraperStatus {
+  id            String   @id @default(cuid())
+  isScraping    Boolean  @default(false)
+  lastScrapedAt DateTime? @db.Timestamptz(6)
+  lastError     String?   @db.Text
+  lastUpdated   DateTime @default(now()) @db.Timestamptz(6)
+
+  // Performance indexes
+  @@index([isScraping])
+  @@index([lastScrapedAt])
+  @@index([lastUpdated])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@ignore
+}
+
+model ProductCheck {
+  id                 String   @id @default(cuid())
+  userId             String   @db.VarChar(255)
+  productName        String   @db.Text
+  productDescription String   @db.Text
+  images             String[]
+  pointsUsed         Int      @default(1)
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  batchNumber        String?  @db.VarChar(100)
+  deviceInfo         Json?
+  ipAddress          String?  @db.VarChar(45) // IPv6 compatible
+  location           String?  @db.VarChar(100)
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkResults CheckResult[]
+
+  // Performance indexes - optimized for verification queries
+  @@index([userId])
+  @@index([createdAt])
+  @@index([batchNumber])
+  @@index([ipAddress])
+  @@index([userId, createdAt]) // Compound index for user history queries
+  @@index([createdAt, userId]) // Reverse compound for time-based filtering
+}
+
+model CheckResult {
+  id             String        @id @default(cuid())
+  userId         String        @db.VarChar(255)
+  productCheckId String        @db.VarChar(255)
+  isCounterfeit  Boolean      @default(false)
+  summary        String       @db.Text
+  sourceUrl      String       @default("https://nafdac.gov.ng/category/recalls-and-alerts/") @db.Text
+  source         String       @default("NAFDAC") @db.VarChar(50)
+  batchNumber    String?      @db.VarChar(100)
+  issueDate      String?      @db.VarChar(20)
+  alertType      String       @default("No Alert") @db.VarChar(50)
+  images         String[]
+  confidence     Float?
+  scrapedAt      DateTime     @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productCheck ProductCheck @relation(fields: [productCheckId], references: [id], onDelete: Cascade)
+
+  // Performance indexes - critical for result retrieval
+  @@index([userId])
+  @@index([productCheckId])
+  @@index([isCounterfeit])
+  @@index([batchNumber])
+  @@index([alertType])
+  @@index([confidence])
+  @@index([scrapedAt])
+  @@index([isCounterfeit, confidence]) // Compound index for suspicious results
+  @@index([productCheckId, scrapedAt]) // For result history queries
+  @@index([userId, scrapedAt]) // User result history
+  @@index([userId, isCounterfeit]) // User counterfeit statistics
+}
+
+model Payment {
+  id               String         @id @default(cuid())
+  userId           String         @db.VarChar(255)
+  amount           Float
+  pointsPurchased  Int
+  status           PaymentStatus  @default(PENDING)
+  paymentGateway   PaymentGateway
+  transactionId    String         @unique @db.VarChar(255)
+  currency         String         @default("NGN") @db.VarChar(3)
+  gatewayResponse  Json?
+  webhookProcessed Boolean        @default(false)
+  callbackUrl      String?        @db.Text
+  createdAt        DateTime       @default(now()) @db.Timestamptz(6)
+  processedAt      DateTime?      @db.Timestamptz(6)
+
+  // Relations
+  user User @relation("PaymentToUser")
+
+  // Performance indexes - optimized for payment queries and webhooks
+  @@index([userId])
+  @@index([transactionId])
+  @@index([status])
+  @@index([webhookProcessed])
+  @@index([createdAt])
+  @@index([userId, status]) // Compound index for user payment history
+}
+
+model NafdacAlert {
+  id               String   @id @default(cuid())
+  title            String   @db.Text
+  url              String   @unique @db.Text
+  excerpt          String   @db.Text
+  date             String   @db.VarChar(20)
+  image            String?  @db.Text
+  fullContent      String?  @db.Text
+  cleanContent     String?  @db.Text
+  productNames     String[]
+  brandNames       String[]
+  batchNumbers     String[]
+  serialNumbers    String[]
+  categories       String[]
+  severity         String   @db.VarChar(50)
+  regions          String[]
+  manufacturer     String?  @db.VarChar(255)
+  drugNames        String[]
+  expiryDates      String[]
+  embed_title      Json?
+  embed_content    Json?
+  similarity_score Float    @default(0.0)
+  batchNumber      String?  @db.VarChar(100)
+  alertType        String   @db.VarChar(50)
+  category         String   @default("recalls") @db.VarChar(50)
+  region           String?  @db.VarChar(100)
+  scrapedAt        DateTime @default(now()) @db.Timestamptz(6)
+  lastUpdated      DateTime @updatedAt @db.Timestamptz(6)
+  active           Boolean  @default(true)
+
+  // Advanced indexes for text search and filtering - CRITICAL for performance
+  @@index([active])
+  @@index([alertType])
+  @@index([severity])
+  @@index([category])
+  @@index([batchNumber])
+  @@index([manufacturer])
+  @@index([region])
+  @@index([scrapedAt])
+  @@index([lastUpdated])
+  @@index([similarity_score])
+
+  // Compound indexes for complex queries
+  @@index([active, scrapedAt]) // Active alerts by recency
+  @@index([alertType, severity]) // Alert filtering by type and severity
+  @@index([batchNumber, active]) // Batch number searches
+  @@index([category, region]) // Geographic alert filtering
+  @@index([manufacturer, active]) // Manufacturer-specific alerts
+
+  // Full-text search indexes (enable pg_trgm extension first, then uncomment below)
+  // @@index([title(ops: raw("gin_trgmops"))], type: Gin) // Fuzzy text matching
+  // @@index([excerpt(ops: raw("gin_trgmops"))], type: Gin) // Fuzzy description matching
+}
+
+model NafdacVerification {
+  id              String          @id @default(cuid())
+  alertId         String          @db.VarChar(255)
+  productCheckId  String          @db.VarChar(255)
+  similarityScore Float
+  matchType       MatchType       @default(FUZZY)
+  confidence      Float
+  verifiedAt      DateTime        @default(now()) @db.Timestamptz(6)
+
+  // Performance indexes for verification tracking
+  @@index([alertId])
+  @@index([productCheckId])
+  @@index([matchType])
+  @@index([confidence])
+  @@index([verifiedAt])
+  @@index([alertId, productCheckId]) // Compound for match verification
+  @@index([similarityScore, confidence]) // For confidence-based queries
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentGateway {
+  PAYSTACK
+  FLUTTERWAVE
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  DELIVERED
+  BOUNCED
+  COMPLAINT
+}
+
+enum MatchType {
+  EXACT
+  SEMANTIC
+  BATCH
+  FUZZY
+  HYBRID
+}
