@@ -27,7 +27,7 @@ Edit `.env.local` and fill in:
 DATABASE_URL="postgresql://username:password@localhost:5432/fake_detector_db"
 
 # NextAuth Configuration
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="https://fake-detector.vercel.app"
 NEXTAUTH_SECRET="your-random-secret-key-here"
 
 # Google OAuth (Get from Google Console)
@@ -62,7 +62,7 @@ npm run db:studio  # Opens Prisma Studio
 npm run dev
 ```
 
-Visit: http://localhost:3000
+Visit: https://fake-detector.vercel.app
 
 ## 🔧 Development Commands
 

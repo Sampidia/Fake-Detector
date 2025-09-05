@@ -6,7 +6,7 @@ const axios = require('axios')
 async function testAPI() {
   console.log('🧪 STARTING API TESTS...\n')
 
-  const baseURL = 'http://localhost:3000'
+  const baseURL = 'https://fake-detector.vercel.app'
 
   try {
     // Test 1: Basic health check
