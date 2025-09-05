@@ -24,7 +24,7 @@ model Account {
   session_state     String?
 
   // Relations
-  user User @relation("AccountToUser")
+  user User @relation("AccountToUser", fields: [userId], references: [id], onDelete: Cascade)
 
   // Performance indexes
   @@index([userId])
@@ -38,7 +38,7 @@ model Session {
   expires      DateTime @db.Timestamptz(6)
 
   // Relations
-  user User @relation("SessionToUser")
+  user User @relation("SessionToUser", fields: [userId], references: [id], onDelete: Cascade)
 
   // Performance indexes
   @@index([sessionToken])
@@ -109,7 +109,7 @@ model ProductCheck {
   location           String?  @db.VarChar(100)
 
   // Relations
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User         @relation("ProductCheckToUser", fields: [userId], references: [id], onDelete: Cascade)
   checkResults CheckResult[]
 
   // Performance indexes - optimized for verification queries
@@ -137,7 +137,7 @@ model CheckResult {
   scrapedAt      DateTime     @default(now()) @db.Timestamptz(6)
 
   // Relations
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User         @relation("CheckResultToUser", fields: [userId], references: [id], onDelete: Cascade)
   productCheck ProductCheck @relation(fields: [productCheckId], references: [id], onDelete: Cascade)
 
   // Performance indexes - critical for result retrieval
@@ -170,7 +170,7 @@ model Payment {
   processedAt      DateTime?      @db.Timestamptz(6)
 
   // Relations
-  user User @relation("PaymentToUser")
+  user User @relation("PaymentToUser", fields: [userId], references: [id], onDelete: Cascade)
 
   // Performance indexes - optimized for payment queries and webhooks
   @@index([userId])
