@@ -1,4 +1,17 @@
 {
+  "env": {
+    "NEXTAUTH_URL": "https://fake-detector.vercel.app"
+  },
+  "build": {
+    "env": {
+      "NEXTAUTH_URL": "https://fake-detector.vercel.app"
+    }
+  },
+  "functions": {
+    "app/api/auth/**/*.js": {
+      "maxDuration": 30
+    }
+  },
   "crons": [
     {
       "path": "/api/scraper/cron",
