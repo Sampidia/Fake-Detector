@@ -14,8 +14,8 @@
     "test:all": "node run-tests.js",
     "test:db": "node test-database.js",
     "test:api": "node test-api.js",
-    "scraper:test": "curl -X POST https://fake-detector-app.vercel.app/api/scraper/cron",
-    "scraper:manual": "curl -X POST https://fake-detector-app.vercel.app/api/scraper/run",
+    "scraper:test": "curl -X POST https://fake-detector.vercel.app/api/scraper/cron",
+    "scraper:manual": "curl -X POST https://fake-detector.vercel.app/api/scraper/run",
     "postinstall": "prisma generate"
   },
   "dependencies": {
