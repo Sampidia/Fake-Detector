@@ -45,16 +45,10 @@ export function MobileHeader({
         <div className="flex items-center justify-between">
           {/* Left Side */}
           <div className="flex items-center gap-3">
-            {showBackToHome ? (
-              <Link href="/" className="flex items-center gap-2">
-                <Logo />
-                <span className="text-lg font-bold text-gray-900">Fake Detector</span>
-              </Link>
-            ) : (
-              <Link href="/" className="flex items-center">
-                <Logo />
-              </Link>
-            )}
+            <Link href="/" className="flex items-center gap-2">
+              <Logo />
+              <span className="text-lg font-bold text-gray-900">Fake Detector</span>
+            </Link>
           </div>
 
           {/* Right Side - User Actions */}

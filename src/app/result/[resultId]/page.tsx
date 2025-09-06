@@ -235,14 +235,14 @@ export default function ResultPage({ params }: PageProps) {
       </div>
 
       {/* Main Result Display */}
-      <div className="container mx-auto px-4 py-2 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-4 py-2 max-w-6xl">
         {/* Header with Advanced Stats */}
         <div className="bg-white rounded-xl shadow-lg border mb-6">
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Advanced Product Analysis</h1>
-              <p className="text-gray-600">
-                Result ID: <code className="px-2 py-1 bg-gray-100 rounded text-sm">{resultId}</code>
+          <div className="p-4 sm:p-8">
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-words overflow-wrap-anywhere">Advanced Product Analysis</h1>
+              <p className="text-gray-600 text-sm sm:text-base break-words overflow-wrap-anywhere">
+                Result ID: <code className="px-2 py-1 bg-gray-100 rounded text-xs sm:text-sm">{resultId}</code>
               </p>
 
               {/* Advanced Processing Stats */}
@@ -325,18 +325,18 @@ export default function ResultPage({ params }: PageProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold mb-2">Analysis Result:</h4>
-                    <div className="text-gray-700 leading-relaxed">
+                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 w-full">
+                    <h4 className="font-semibold mb-2 text-sm sm:text-base break-words">Analysis Result:</h4>
+                    <div className="text-gray-700 leading-relaxed break-words overflow-wrap-anywhere">
                       {result.summary.split('\n\n### ').map((part, index) => {
                         if (index === 0) {
-                          return <p key={index}>{part}</p>
+                          return <p key={index} className="text-sm sm:text-base leading-relaxed break-words overflow-wrap-anywhere">{part}</p>
                         }
                         const [heading, ...content] = part.split('\n\n')
                         return (
                           <div key={index}>
-                            <h3 className="font-extrabold text-xl mt-6 mb-3">{heading.replace(':', '')}:</h3>
-                            <p>{content.join('\n\n')}</p>
+                            <h3 className="font-extrabold text-lg sm:text-xl mt-4 sm:mt-6 mb-3 break-words overflow-wrap-anywhere">{heading.replace(':', '')}:</h3>
+                            <p className="text-sm sm:text-base leading-relaxed break-words overflow-wrap-anywhere">{content.join('\n\n')}</p>
                           </div>
                         )
                       })}
