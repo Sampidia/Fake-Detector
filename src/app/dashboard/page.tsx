@@ -181,40 +181,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Dashboard Header with Logo and Title */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo and Title */}
-            <Link href="/" className="flex items-center gap-3">
-              <Logo />
-              <span className="text-xl font-bold gradient-text">Fake Detector</span>
-            </Link>
-
-            {/* User Actions */}
-            <div className="flex items-center gap-4">
-              {/* Points Display */}
-              <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
-                <Wallet className="w-5 h-5 text-blue-600" />
-                <span className="text-base font-semibold text-gray-900">
-                  {stats.pointsBalance}
-                </span>
-                <span className="text-sm text-blue-600">pts</span>
-              </div>
-
-              <Button
-                onClick={handleSignOut}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign Out</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Mobile Hamburger Menu Header */}
+      <MobileHeader />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">

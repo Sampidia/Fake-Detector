@@ -44,32 +44,43 @@ export function MobileHeader({
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Left Side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {showBackToHome ? (
               <Link href="/" className="flex items-center gap-2">
                 <Logo />
-                <span className="text-sm font-bold">Fake Detector</span>
+                <span className="text-lg font-bold text-gray-900">Fake Detector</span>
               </Link>
             ) : (
               <Link href="/" className="flex items-center">
                 <Logo />
               </Link>
             )}
+
+            {/* Google Profile Avatar */}
+            {isAuthenticated && session.user?.image && (
+              <img
+                src={session.user.image}
+                alt={`${session.user.name}'s profile`}
+                className="w-6 sm:w-8 h-6 sm:h-8 rounded-full border-2 border-blue-300 hover:border-blue-400 transition-colors"
+                title={`Welcome, ${session.user.name}`}
+              />
+            )}
           </div>
 
-          {/* Center - Auth Status */}
-          {isAuthenticated ? (
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full">
-              <Wallet className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold">
-                {session.user?.pointsBalance || 0}
-              </span>
-              <span className="text-xs text-blue-600">pts</span>
-            </div>
-          ) : null}
+          {/* Right Side - User Actions */}
+          <div className="flex items-center gap-2">
+            {/* Points Display */}
+            {isAuthenticated && (
+              <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full">
+                <Wallet className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold">
+                  {session.user?.pointsBalance || 0}
+                </span>
+                <span className="text-xs text-blue-600">pts</span>
+              </div>
+            )}
 
-          {/* Right Side */}
-          <div className="flex items-center gap-1">
+            {/* Dashboard Button (Desktop only) */}
             {isAuthenticated && (
               <Link href="/dashboard">
                 <Button
@@ -83,6 +94,7 @@ export function MobileHeader({
               </Link>
             )}
 
+            {/* Hamburger Menu */}
             <Button
               variant="ghost"
               size="sm"

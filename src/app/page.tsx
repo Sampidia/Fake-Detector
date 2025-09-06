@@ -221,7 +221,7 @@ export default function HomePage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white text-white hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover:shadow-md px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg w-full sm:w-auto"
+                    className="border-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover:shadow-md px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg w-full sm:w-auto"
                   >
                     <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Manage Points

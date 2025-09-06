@@ -129,7 +129,7 @@ export default function ScanPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Mobile-Optimized Header */}
+      {/* Mobile Hamburger Menu Header with Google Profile Avatar */}
       <MobileHeader />
 
       {/* Main Content */}

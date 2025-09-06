@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Clock, CheckCircle, XCircle, Zap, Shield, Database, Eye, Wallet, LogOut, LayoutGrid } from "lucide-react"
 import Logo from "@/components/ui/logo"
+import { MobileHeader } from "@/components/ui/mobile-header"
 import { BetaModal } from "@/components/ui/beta-modal"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
@@ -221,57 +222,8 @@ export default function ResultPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-4">
-                <Logo />
-                <span className="text-lg font-bold">Fake Detector</span>
-              </Link>
-              {isAuthenticated ? (
-                <Badge variant="secondary" className="text-xs">
-                  Welcome, {session.user?.name || session.user?.email}
-                </Badge>
-              ) : (
-                <Link href="/" className="flex items-center gap-2">
-                  <span className="text-lg font-bold">Fake Detector</span>
-                </Link>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4">
-              {isAuthenticated ? (
-                <>
-                  <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-                    <Wallet className="w-4 h-4 text-blue-600" />
-                    <span className="font-semibold">{stats.pointsBalance} points</span>
-                  </div>
-
-                  <Link href="/dashboard">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-300 hover:shadow-sm"
-                    >
-                      <LayoutGrid className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  href="/auth/signin"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                >
-                  🔐 Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Mobile Hamburger Menu Header */}
+      <MobileHeader />
       {/* Back Button */}
       <div className="container mx-auto px-4 py-4">
         <Link href="/dashboard">
