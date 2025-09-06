@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Logo from "@/components/ui/logo"
 import { MobileHeader } from "@/components/ui/mobile-header"
+import { BetaModal } from "@/components/ui/beta-modal"
 import {
   CreditCard,
   Download,
@@ -57,6 +58,12 @@ export default function DashboardPage() {
   })
   const [recentScans, setRecentScans] = useState<ScanHistory[]>([])
   const [scansLoading, setScansLoading] = useState(false)
+  const [isBetaModalOpen, setIsBetaModalOpen] = useState(false)
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBetaModalOpen(true)
+  }
 
   // Fetch user balance and recent scans on component mount
   useEffect(() => {
@@ -174,8 +181,40 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Mobile-Optimized Header */}
-      <MobileHeader showDashboardButton={false} />
+      {/* Dashboard Header with Logo and Title */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo and Title */}
+            <Link href="/" className="flex items-center gap-3">
+              <Logo />
+              <span className="text-xl font-bold gradient-text">Fake Detector</span>
+            </Link>
+
+            {/* User Actions */}
+            <div className="flex items-center gap-4">
+              {/* Points Display */}
+              <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+                <Wallet className="w-5 h-5 text-blue-600" />
+                <span className="text-base font-semibold text-gray-900">
+                  {stats.pointsBalance}
+                </span>
+                <span className="text-sm text-blue-600">pts</span>
+              </div>
+
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -296,7 +335,7 @@ export default function DashboardPage() {
               ) : (
                 <div>
           <p className="text-gray-600">Daily points already claimed</p>
-                  <p className="text-sm text-gray-500">Come back tomorrow for 5 more points.</p>
+          <p className="text-sm text-gray-500">Come back tomorrow for 5 more points.</p>
                 </div>
               )}
 
@@ -321,10 +360,14 @@ export default function DashboardPage() {
               <History className="w-5 h-5" />
               Recent Activity
             </CardTitle>
-            {stats.totalScans > 5 && (
+            {stats.totalScans > 3 && (
               <Link href="/search">
-                <Button variant="outline" size="sm">
-                  <Eye className="w-4 h-4 mr-2" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-300 hover:shadow-sm"
+                >
+                  <Eye className="w-4 h-4 mr-2 transition-transform duration-300 hover:scale-110" />
                   View All
                 </Button>
               </Link>
@@ -360,66 +403,136 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {recentScans.map((scan) => (
-                  <div key={scan.productCheckId} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-gray-200 transition-colors">
-                    <Link href={`/result/${scan.id}`} className="flex items-center gap-3 flex-1">
-                      <div className="flex items-center gap-2">
-                        {scan.isCounterfeit ? (
-                          <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                        ) : (
-                          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-gray-900 truncate">
+                  <div key={scan.productCheckId} className="p-4 border border-gray-100 rounded-lg hover:border-gray-200 transition-colors">
+                    {/* Mobile: Vertical Stack Layout */}
+                    <div className="block md:hidden space-y-3">
+                      {/* Mobile Product Info */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          {scan.isCounterfeit ? (
+                            <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                          ) : (
+                            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 truncate text-base">
                             {scan.productName}
                           </h4>
+                        </div>
+                      </div>
+
+                      {/* Mobile Result Info */}
+                      <div className="pl-8 space-y-2">
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span>Result ID: {scan.productCheckId.slice(0, 8)}...</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <span>{new Date(scan.createdAt).toLocaleDateString()}</span>
+                        </div>
+
+                        {/* Mobile Badge - Below Date */}
+                        <div className="flex items-center">
                           {scan.isCounterfeit ? (
-                            <Badge variant="secondary" className="text-xs bg-red-50 text-red-700 border-red-200">
+                            <Badge variant="secondary" className="text-xs bg-red-50 text-red-700 border-red-200 w-full justify-center">
                               🔴 FAKE/RECALL/EXPIRED PRODUCT DETECTED
                             </Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                            <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200 w-full justify-center">
                               🔵 PRODUCT VERIFIED
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                          <span>Result ID: {scan.productCheckId.slice(0, 8)}...</span>
-                          <span>•</span>
-                          <span>{new Date(scan.createdAt).toLocaleDateString()}</span>
-                          {scan.batchNumber && (
-                            <>
-                              <span>•</span>
-                              <span>Batch: {scan.batchNumber}</span>
-                            </>
+
+                        {/* Mobile Batch Number - Below Badge */}
+                        {scan.batchNumber && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <span>Batch: {scan.batchNumber}</span>
+                          </div>
+                        )}
+
+                        {/* Mobile Confidence and Eye Icon - Bottom */}
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-2">
+                          <div className="text-center">
+                            <div className={`text-lg font-bold ${
+                              scan.confidence >= 80 ? 'text-green-600' :
+                              scan.confidence >= 60 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
+                              {scan.confidence}%
+                            </div>
+                            <div className="text-xs text-gray-400">Confidence</div>
+                          </div>
+                          <Link href={`/result/${scan.id}`}>
+                            <div className="p-2 hover:bg-gray-100 rounded-md transition-colors">
+                              <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop: Original Layout */}
+                    <div className="hidden md:flex items-center justify-between">
+                      <Link href={`/result/${scan.id}`} className="flex items-center gap-3 flex-1">
+                        <div className="flex items-center gap-2">
+                          {scan.isCounterfeit ? (
+                            <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                          ) : (
+                            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                           )}
                         </div>
-                      </div>
-                    </Link>
 
-                    <div className="flex items-center gap-2 ml-4">
-                      <div className="text-center">
-                        <div className={`text-lg font-bold ${
-                          scan.confidence >= 80 ? 'text-green-600' :
-                          scan.confidence >= 60 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                          {scan.confidence}%
-                        </div>
-                        <div className="text-xs text-gray-400">Confidence</div>
-                      </div>
-                      <Link href={`/result/${scan.id}`}>
-                        <div className="p-2 hover:bg-gray-100 rounded-md transition-colors">
-                          <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-gray-900 truncate">
+                              {scan.productName}
+                            </h4>
+                            {scan.isCounterfeit ? (
+                              <Badge variant="secondary" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                🔴 FAKE/RECALL/EXPIRED PRODUCT DETECTED
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                🔵 PRODUCT VERIFIED
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-gray-500">
+                            <span>Result ID: {scan.productCheckId.slice(0, 8)}...</span>
+                            <span>•</span>
+                            <span>{new Date(scan.createdAt).toLocaleDateString()}</span>
+                            {scan.batchNumber && (
+                              <>
+                                <span>•</span>
+                                <span>Batch: {scan.batchNumber}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </Link>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        <div className="text-center">
+                          <div className={`text-lg font-bold ${
+                            scan.confidence >= 80 ? 'text-green-600' :
+                            scan.confidence >= 60 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {scan.confidence}%
+                          </div>
+                          <div className="text-xs text-gray-400">Confidence</div>
+                        </div>
+                        <Link href={`/result/${scan.id}`}>
+                          <div className="p-2 hover:bg-gray-100 rounded-md transition-colors">
+                            <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                          </div>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 ))}
 
                 {/* View More CTA */}
-                {stats.totalScans > 5 && (
+                {stats.totalScans > 3 && (
                   <div className="text-center pt-4 border-t border-gray-100">
                     <Link href="/search">
                       <Button variant="outline" className="w-full">
@@ -457,19 +570,53 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 px-4">
+      <footer className="bg-gray-900 text-white py-4 sm:py-6 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <Logo showText />
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
+            {/* Left Section: Logo and Brand */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Logo />
+              <span className="text-sm sm:text-base font-bold text-white">Fake Detector</span>
             </div>
 
-            <div className="text-sm text-gray-400">
+            {/* Center Section: Download Badges */}
+            <div className="flex items-center gap-4 sm:gap-6">
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/Google%20play.png"
+                  alt="Join Beta Program - Android"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/App%20Store.png"
+                  alt="Join Beta Program - iOS"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+            </div>
+
+            {/* Right Section: Database Info */}
+            <div className="text-xs sm:text-sm text-gray-400 text-center lg:text-right">
               Utilize <strong className="text-blue-400">NAFDAC</strong> Official Database
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Beta Program Modal */}
+      <BetaModal
+        isOpen={isBetaModalOpen}
+        onClose={() => setIsBetaModalOpen(false)}
+      />
     </div>
   )
 }

@@ -125,14 +125,14 @@ export function UploadZone({
         <div className="font-medium text-gray-900 mb-1">{label}</div>
         <div className="text-sm text-gray-500 mb-4">Tap to upload or drag & drop</div>
 
-        <div className="flex gap-2 mb-2">
+        <div className="flex flex-col gap-2 mb-2 md:flex-row">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation()
               fileInputRef.current?.click()
             }}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded border"
+            className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded border w-full md:w-auto"
           >
             <Upload className="w-3 h-3" />
             Browse
@@ -143,7 +143,7 @@ export function UploadZone({
               e.stopPropagation()
               handleCameraCapture()
             }}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded"
+            className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded w-full md:w-auto"
           >
             <Camera className="w-3 h-3" />
             Camera

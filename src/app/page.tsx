@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { Download, LayoutGrid, CreditCard, Shield, Clock, LogIn } from "lucide-react"
@@ -8,6 +8,7 @@ import Logo from "@/components/ui/logo"
 import { MobileHeader } from "@/components/ui/mobile-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { BetaModal } from "@/components/ui/beta-modal"
 
 // Mobile-Optimized Loading component
 function DashboardSkeleton() {
@@ -27,8 +28,14 @@ function DashboardSkeleton() {
 
 export default function HomePage() {
   const { data: session, status } = useSession()
+  const [isBetaModalOpen, setIsBetaModalOpen] = useState(false)
 
   const isAuthenticated = status === "authenticated"
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBetaModalOpen(true)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -216,7 +223,8 @@ export default function HomePage() {
                     variant="outline"
                     className="border-white text-white hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover:shadow-md px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg w-full sm:w-auto"
                   >
-                    View Dashboard
+                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Manage Points
                   </Button>
                 </Link>
               </>
@@ -245,18 +253,51 @@ export default function HomePage() {
       {/* Mobile-Optimized Footer */}
       <footer className="bg-gray-900 text-white py-4 sm:py-6 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
+            {/* Left Section: Logo and Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
               <Logo />
               <span className="text-sm sm:text-base font-bold text-white">Fake Detector</span>
             </div>
 
-            <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-right">
+            {/* Center Section: Download Badges */}
+            <div className="flex items-center gap-4 sm:gap-6">
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/Google%20play.png"
+                  alt="Join Beta Program - Android"
+                  className="h-20 sm:h-24 w-auto hover:opacity-90"
+                />
+              </button>
+
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/App%20Store.png"
+                  alt="Join Beta Program - iOS"
+                  className="h-20 sm:h-24 w-auto hover:opacity-90"
+                />
+              </button>
+            </div>
+
+            {/* Right Section: Database Info */}
+            <div className="text-xs sm:text-sm text-gray-400 text-center lg:text-right">
               Utilize <strong className="text-blue-400">NAFDAC</strong> Official Database
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Beta Program Modal */}
+      <BetaModal
+        isOpen={isBetaModalOpen}
+        onClose={() => setIsBetaModalOpen(false)}
+      />
     </div>
   )
 }

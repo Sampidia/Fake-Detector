@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Clock, CheckCircle, XCircle, Zap, Shield, Database, Eye, Wallet, LogOut, LayoutGrid } from "lucide-react"
 import Logo from "@/components/ui/logo"
+import { BetaModal } from "@/components/ui/beta-modal"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 
@@ -72,8 +73,14 @@ export default function ResultPage({ params }: PageProps) {
     pointsBalance: 0,
     canClaimDaily: false
   })
+  const [isBetaModalOpen, setIsBetaModalOpen] = useState(false)
 
   const isAuthenticated = status === "authenticated"
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBetaModalOpen(true)
+  }
 
   // Fetch enhanced result data from our advanced API
   useEffect(() => {
@@ -452,8 +459,8 @@ export default function ResultPage({ params }: PageProps) {
                     {result.newBalance} points remaining
                   </Badge>
                 </div>
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-300 rounded-full hidden sm:block"></div>
+                <div className="flex items-center gap-2 hidden sm:flex">
                   <Shield className="w-5 h-5 text-green-600" />
                   <span className="text-sm font-medium">Security Enhanced</span>
                 </div>
@@ -490,20 +497,53 @@ export default function ResultPage({ params }: PageProps) {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 px-4">
+      <footer className="bg-gray-900 text-white py-4 sm:py-6 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0 flex items-center gap-2">
-              <img src="/logo.png" alt="Fake Detector" className="h-10 w-10" />
-              <span className="text-lg font-bold">Fake Detector</span>
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
+            {/* Left Section: Logo and Brand */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Logo />
+              <span className="text-sm sm:text-base font-bold text-white">Fake Detector</span>
             </div>
 
-            <div className="text-sm text-gray-400">
+            {/* Center Section: Download Badges */}
+            <div className="flex items-center gap-4 sm:gap-6">
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/Google%20play.png"
+                  alt="Join Beta Program - Android"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/App%20Store.png"
+                  alt="Join Beta Program - iOS"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+            </div>
+
+            {/* Right Section: Database Info */}
+            <div className="text-xs sm:text-sm text-gray-400 text-center lg:text-right">
               Utilize <strong className="text-blue-400">NAFDAC</strong> Official Database
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Beta Program Modal */}
+      <BetaModal
+        isOpen={isBetaModalOpen}
+        onClose={() => setIsBetaModalOpen(false)}
+      />
     </div>
   )
 }

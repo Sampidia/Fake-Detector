@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { MobileHeader } from "@/components/ui/mobile-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Logo from "@/components/ui/logo"
+import { BetaModal } from "@/components/ui/beta-modal"
 import { Mail, Phone, MapPin, Send, MessageCircle, HelpCircle, Shield, CreditCard, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react"
 
 // FAQ data
@@ -45,6 +47,12 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
+  const [isBetaModalOpen, setIsBetaModalOpen] = useState(false)
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBetaModalOpen(true)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -229,8 +237,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Email Support</h3>
                       <p className="text-gray-600 text-sm mb-1">For general inquiries</p>
-                      <a href="mailto:sampidia02@gmail.com" className="text-blue-600 hover:text-blue-800 font-medium">
-                        sampidia02@gmail.com
+                      <a href="mailto:sampidia0@gmail.com" className="text-blue-600 hover:text-blue-800 font-medium">
+                        sampidia0@gmail.com
                       </a>
                     </div>
                   </div>
@@ -308,18 +316,51 @@ export default function ContactPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-4 sm:py-6 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
+            {/* Left Section: Logo and Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
               <Logo />
               <span className="text-sm sm:text-base font-bold text-white">Fake Detector</span>
             </div>
 
-            <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-right">
+            {/* Center Section: Download Badges */}
+            <div className="flex items-center gap-4 sm:gap-6">
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/Google%20play.png"
+                  alt="Join Beta Program - Android"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+
+              <button
+                onClick={handleDownloadClick}
+                className="transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              >
+                <img
+                  src="/App%20Store.png"
+                  alt="Join Beta Program - iOS"
+                  className="h-16 sm:h-20 w-auto hover:opacity-90"
+                />
+              </button>
+            </div>
+
+            {/* Right Section: Database Info */}
+            <div className="text-xs sm:text-sm text-gray-400 text-center lg:text-right">
               Utilize <strong className="text-blue-400">NAFDAC</strong> Official Database
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Beta Program Modal */}
+      <BetaModal
+        isOpen={isBetaModalOpen}
+        onClose={() => setIsBetaModalOpen(false)}
+      />
     </div>
   )
 }
