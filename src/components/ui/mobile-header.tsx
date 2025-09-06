@@ -55,16 +55,6 @@ export function MobileHeader({
                 <Logo />
               </Link>
             )}
-
-            {/* Google Profile Avatar */}
-            {isAuthenticated && session.user?.image && (
-              <img
-                src={session.user.image}
-                alt={`${session.user.name}'s profile`}
-                className="w-6 sm:w-8 h-6 sm:h-8 rounded-full border-2 border-blue-300 hover:border-blue-400 transition-colors"
-                title={`Welcome, ${session.user.name}`}
-              />
-            )}
           </div>
 
           {/* Right Side - User Actions */}
@@ -78,6 +68,16 @@ export function MobileHeader({
                 </span>
                 <span className="text-xs text-blue-600">pts</span>
               </div>
+            )}
+
+            {/* Google Profile Avatar - Now on Right */}
+            {isAuthenticated && session.user?.image && (
+              <img
+                src={session.user.image}
+                alt={`${session.user.name}'s profile`}
+                className="w-6 sm:w-8 h-6 sm:h-8 rounded-full border-2 border-blue-300 hover:border-blue-400 transition-colors"
+                title={`Welcome, ${session.user.name}`}
+              />
             )}
 
             {/* Dashboard Button (Desktop only) */}
