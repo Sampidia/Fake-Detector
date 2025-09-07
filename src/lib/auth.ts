@@ -19,33 +19,47 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: DefaultSession["user"] }) {
-      if (user) {
-        // Ensure user exists in database
-        await ensureUserExists({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image
-        })
-        token.id = user.id || token.sub
+      try {
+        if (user) {
+          // Ensure user exists in database with error handling
+          await ensureUserExists({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image
+          })
+          token.id = user.id || token.sub
+          console.log('✅ JWT token created for user:', user.email)
+        }
+        return token
+      } catch (error) {
+        console.error('❌ JWT callback error:', error)
+        // Return token anyway to prevent auth failure
+        return token
       }
-      return token
     },
 
     async session({ session, token }: { session: DefaultSession; token: JWT }) {
-      if (session.user && token && token.id && typeof token.id === 'string') {
-        session.user.id = token.id
+      try {
+        if (session.user && token && token.id && typeof token.id === 'string') {
+          session.user.id = token.id
 
-        // Get actual user data from database
-        const dbUser = await getUserWithBalance(token.id)
-        if (dbUser) {
-          session.user.pointsBalance = dbUser.pointsBalance
-        } else {
-          // Fallback to default
-          session.user.pointsBalance = 5
+          // Get actual user data from database with error handling
+          const dbUser = await getUserWithBalance(token.id)
+          if (dbUser) {
+            session.user.pointsBalance = dbUser.pointsBalance
+          } else {
+            // Fallback to default
+            session.user.pointsBalance = 5
+            console.warn('⚠️ User not found in database, using default balance')
+          }
         }
+        return session
+      } catch (error) {
+        console.error('❌ Session callback error:', error)
+        // Return session anyway to prevent auth failure
+        return session
       }
-      return session
     },
   },
 

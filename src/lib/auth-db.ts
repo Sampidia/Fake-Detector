@@ -8,35 +8,35 @@ export async function ensureUserExists(user: {
   image?: string
 }) {
   try {
-    // Try to find existing user
-    let dbUser = await prisma.user.findUnique({
-      where: { email: user.email }
+    // 📈 BEST PRACTICE: Atomic upsert prevents race conditions
+    const dbUser = await prisma.user.upsert({
+      where: { email: user.email },
+      update: {
+        // Always update these fields
+        name: user.name,
+        image: user.image,
+        // TODO: Consider ID update if needed for auth system migrations
+        // Current approach: Trust Google's ID consistency
+      },
+      create: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      }
     })
 
-    if (!dbUser) {
-      // Create new user if doesn't exist
-      dbUser = await prisma.user.create({
-        data: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        }
-      })
-      console.log('✅ Created new user:', user.email)
-    } else if (dbUser.id !== user.id) {
-      // If email exists but id doesn't match, update the id
-      // This handles migration from old auth system
-      dbUser = await prisma.user.update({
-        where: { email: user.email },
-        data: { id: user.id, name: user.name, image: user.image }
-      })
-      console.log('🔄 Updated user id:', user.email)
+    // Enhanced logging for debugging
+    if (dbUser.updatedAt && dbUser.updatedAt > dbUser.createdAt) {
+      console.log('🔄 Updated existing user:', user.email)
+    } else {
+      console.log('✨ Created new user:', user.email)
     }
 
     return dbUser
   } catch (error) {
-    console.error('Error ensuring user exists:', error)
+    console.error('❌ Error ensuring user exists:', error)
+    // Re-throw to maintain error handling behavior
     throw error
   }
 }
