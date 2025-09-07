@@ -194,6 +194,9 @@ model Account {
 
   // Bidirectional relation - exact match required
   accountUser User @relation("AccountToUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  // ✅ CRITICAL: Add compound unique constraint required by NextAuth PrismaAdapter
+  @@unique([provider, providerAccountId])
   @@index([userId])
 }
 
