@@ -113,8 +113,20 @@ export function MobileHeader({
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
           <div className="p-6">
-            {/* Close Button */}
-            <div className="flex justify-end mb-6">
+            {/* Drawer Header with Brand */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                {/* Hamburger Menu Icon */}
+                <Menu className="w-5 h-5" />
+
+                {/* Logo and Brand */}
+                <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+                  <Logo />
+                  <span className="text-lg font-bold text-gray-900">Fake Detector</span>
+                </Link>
+              </div>
+
+              {/* Close Button */}
               <Button
                 variant="ghost"
                 size="sm"
