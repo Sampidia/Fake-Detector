@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Logo from "@/components/ui/logo"
-import { MobileHeader } from "@/components/ui/mobile-header"
+import { MobileHeader } from "@/components/ui/mobile-header-dashboard"
 import { BetaModal } from "@/components/ui/beta-modal"
 import {
   CreditCard,
