@@ -3,6 +3,24 @@
 
 ---
 
+## __🛠️ MAINTENANCE GUIDE:__
+
+### __To Modify Points System:__
+
+1. __Update default__: Change `@default(5)` in schema
+2. __Add operations__: Create balance transaction functions
+3. __Update UI__: Modify components to reflect changes
+4. __Test thoroughly__: Ensure no negative balances
+
+### __Scaling Considerations:__
+
+- __For high-traffic__: Consider Redis session storage
+- __For complex logic__: Move balance logic to service layer
+- __For real-time updates__: Consider WebSocket integration
+
+This custom session behavior ensures your points balance system remains __secure, performant, and type-safe__ throughout your authentication flow! 🚀
+
+
 ## 🎯 TOP PRIORITY NEXT STEPS (Production Readiness)
 
 ### 1. 🔐 Enhanced Security & Authentication
