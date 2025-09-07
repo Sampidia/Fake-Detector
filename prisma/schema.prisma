@@ -35,13 +35,14 @@ model UserPlan {
 
 model User {
   id                String      @id @default(cuid())
-  email             String      @unique
   name              String?     @db.VarChar(255)
+  email             String      @unique
+  emailVerified     DateTime?
   image             String?
   pointsBalance     Int         @default(5)
   dailyPointsLastGiven String   @default("")
   createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt  // ✅ Added standard Prisma field
+  updatedAt         DateTime    @updatedAt
   planId            String      @default("free")
 
   // All bidirectional relations with exact matching names
