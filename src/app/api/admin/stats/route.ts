@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { endOfMonth, startOfMonth, subMonths } from 'date-fns'
 
-export async function GET(request: NextRequest) {
+// Force dynamic rendering for auth-required API routes
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
   try {
     // Check admin access
     const session = await auth()
@@ -18,99 +20,116 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Calculate date ranges
-    const today = new Date()
-    const startOfCurrentMonth = startOfMonth(today)
-    const startOfLastMonth = startOfMonth(subMonths(today, 1))
-    const endOfLastMonth = endOfMonth(subMonths(today, 1))
-
     // Get user statistics
-    const [totalUsers, usersLastMonth, activeSubscriptions] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({
-        where: {
-          createdAt: {
-            gte: startOfLastMonth,
-            lte: endOfLastMonth
-          }
+    const totalUsers = await prisma.user.count()
+    const activeUsersToday = await prisma.user.count({
+      where: {
+        // Users who have logged in within the last 24 hours (approximated by recent data)
+        updatedAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
         }
-      }),
-      prisma.user.count({
-        where: {
-          userSubscriptions: {
-            some: {
-              status: 'ACTIVE'
-            }
-          }
-        }
-      })
-    ])
-
-    // Calculate growth rates
-    const usersGrowth = totalUsers > 0 ? Math.round((usersLastMonth / (totalUsers - usersLastMonth)) * 100) : 0
-
-    // Product checks analytics
-    const [totalScans, scansLastMonth] = await Promise.all([
-      prisma.productCheck.count(),
-      prisma.productCheck.count({
-        where: {
-          createdAt: {
-            gte: startOfLastMonth,
-            lte: endOfLastMonth
-          }
-        }
-      })
-    ])
-
-    const scansGrowth = totalScans > 0 ? Math.round((scansLastMonth / (totalScans - scansLastMonth)) * 100) : 0
-
-    // AI usage analytics
-    const [totalAIRequests, aiRequestsLastMonth] = await Promise.all([
-      prisma.aIUsageRecord.count(),
-      prisma.aIUsageRecord.count({
-        where: {
-          createdAt: {
-            gte: startOfLastMonth,
-            lte: endOfLastMonth
-          }
-        }
-      })
-    ])
-
-    // Revenue calculations (simplified - would need actual transaction data)
-    const totalRevenue = await calculateTotalRevenue()
-    const revenueLastMonth = await calculateRevenueForPeriod(startOfLastMonth, endOfLastMonth)
-    const revenueGrowth = totalRevenue > 0 ? Math.round(((totalRevenue - revenueLastMonth) / totalRevenue) * 100) : 0
-
-    // Return comprehensive stats
-    return NextResponse.json({
-      totalUsers,
-      activeSubscriptions,
-      totalScans,
-      totalRevenue: totalRevenue * 0.01, // Convert from kobo to NGN
-      totalAIRequests,
-      revenueGrowth,
-      usersGrowth,
-      scansGrowth,
-
-      // Additional metrics
-      systemHealth: 98.5,
-      avgResponseTime: 1.2,
-      activeThreats: 0,
-
-      // Plan distribution
-      planStats: await getPlanDistribution(),
-
-      // Recent activity
-      recentActivity: await getRecentActivity(),
-
-      // Performance metrics
-      performance: {
-        apiResponseTime: '150ms',
-        databaseQueryTime: '45ms',
-        aiProviderLatency: '850ms'
       }
     })
+
+    // Get NAFDAC alert statistics
+    const totalAlerts = await prisma.nafdacAlert.count()
+    const activeAlerts = await prisma.nafdacAlert.count({
+      where: { active: true }
+    })
+
+    // Get recent alert statistics (last 7 days)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const recentAlerts = await prisma.nafdacAlert.count({
+      where: {
+        scrapedAt: {
+          gte: sevenDaysAgo
+        }
+      }
+    })
+
+    // Get product verification statistics for today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+
+    const todayVerification = await prisma.checkResult.count({
+      where: {
+        createdAt: {
+          gte: today,
+          lt: tomorrow
+        }
+      }
+    })
+
+    // Get AI usage statistics for today
+    const todayAIUsage = await prisma.aIUsageRecord.aggregate({
+      where: {
+        createdAt: {
+          gte: today,
+          lt: tomorrow
+        }
+      },
+      _count: { id: true },
+      _sum: { cost: true }
+    })
+
+    // Get total AI usage this month
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    const monthlyAIUsage = await prisma.aIUsageRecord.aggregate({
+      where: {
+        createdAt: {
+          gte: firstDayOfMonth
+        }
+      },
+      _count: { id: true },
+      _sum: { cost: true }
+    })
+
+    // Get user subscription statistics
+    const subscriptionStats = await prisma.subscription.aggregate({
+      where: { status: 'active' },
+      _count: { id: true }
+    })
+
+    // Note: Contact submissions table doesn't exist in schema,
+    // this would be added in future if contact form functionality is implemented
+    const recentContacts = 0
+
+    const stats = {
+      users: {
+        total: totalUsers,
+        activeToday: activeUsersToday
+      },
+      alerts: {
+        total: totalAlerts,
+        active: activeAlerts,
+        recent: recentAlerts
+      },
+      verification: {
+        todayScans: todayVerification
+      },
+      aiUsage: {
+        todayRequests: todayAIUsage._count.id,
+        todaysCost: todayAIUsage._sum.cost || 0,
+        monthlyRequests: monthlyAIUsage._count.id,
+        monthlyCost: monthlyAIUsage._sum.cost || 0
+      },
+      subscriptions: {
+        active: subscriptionStats._count.id || 0
+      },
+      contacts: {
+        recentSubmissions: recentContacts
+      },
+      system: {
+        lastScrape: new Date().toISOString(),
+        version: "1.2.0",
+        uptime: "Good"
+      }
+    }
+
+    return NextResponse.json(stats)
 
   } catch (error) {
     console.error('Admin stats error:', error)
@@ -118,132 +137,5 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch admin statistics' },
       { status: 500 }
     )
-  }
-}
-
-// Helper function for revenue calculation (simplified)
-async function calculateTotalRevenue(): Promise<number> {
-  try {
-    // This would integrate with actual transaction data
-    // For now, return estimated revenue based on subscriptions
-    const subscriptionCount = await prisma.subscription.count({
-      where: { status: 'ACTIVE' }
-    })
-
-    // Assume average subscription value
-    return subscriptionCount * 1500 // Estimate: NGN 1,500 per subscription
-  } catch {
-    return 0
-  }
-}
-
-// Calculate revenue for a specific period
-async function calculateRevenueForPeriod(start: Date, end: Date): Promise<number> {
-  try {
-    const subscriptions = await prisma.subscription.count({
-      where: {
-        status: 'ACTIVE',
-        createdAt: {
-          gte: start,
-          lte: end
-        }
-      }
-    })
-
-    return subscriptions * 1500
-  } catch {
-    return 0
-  }
-}
-
-// Get plan distribution
-async function getPlanDistribution() {
-  try {
-    const planStats = await prisma.user.groupBy({
-      by: ['planId'],
-      _count: {
-        planId: true
-      }
-    })
-
-    const result: Record<string, number> = {}
-
-    planStats.forEach(stat => {
-      const planName = stat.planId || 'free'
-      result[planName] = stat._count.planId
-    })
-
-    return result
-  } catch {
-    return { free: 0, basic: 0, standard: 0, business: 0 }
-  }
-}
-
-// Get recent activity
-async function getRecentActivity() {
-  try {
-    // Get recent subscriptions
-    const recentSubs = await prisma.subscription.findMany({
-      take: 3,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: { select: { email: true } },
-        plan: { select: { displayName: true } }
-      }
-    })
-
-    // Get recent AI usage
-    const recentAI = await prisma.aIUsageRecord.findMany({
-      take: 3,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        aiProvider: { select: { name: true } },
-        user: { select: { email: true } }
-      }
-    })
-
-    // Combine and sort by recency
-    const activities = [
-      ...recentSubs.map(sub => ({
-        type: 'subscription',
-        message: `New ${sub.plan.displayName} subscription`,
-        timestamp: sub.createdAt,
-        user: sub.user.email?.substring(0, 3) + '***'
-      })),
-      ...recentAI.map(ai => ({
-        type: 'ai_usage',
-        message: `AI request to ${ai.aiProvider?.name || 'Unknown Provider'}`,
-        timestamp: ai.createdAt,
-        user: ai.user.email?.substring(0, 3) + '***'
-      }))
-    ]
-
-    return activities
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 5)
-      .map(activity => ({
-        ...activity,
-        timeAgo: getTimeAgo(activity.timestamp)
-      }))
-
-  } catch (error) {
-    console.error('Error getting recent activity:', error)
-    return []
-  }
-}
-
-// Helper function to get time ago
-function getTimeAgo(date: Date): string {
-  const now = new Date()
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-
-  if (diffInHours < 1) {
-    return 'Just now'
-  } else if (diffInHours === 1) {
-    return '1 hour ago'
-  } else if (diffInHours < 24) {
-    return `${diffInHours} hours ago`
-  } else {
-    return `${Math.floor(diffInHours / 24)} days ago`
   }
 }

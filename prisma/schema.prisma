@@ -308,14 +308,14 @@ model PlanUsageTracker {
   @@index([period])
 }
 
-// ============ ENUMS ============
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-enum AIType {
-  OCR
-  VERIFICATION
-  EXTRACTION
-  ANALYSIS
+  @@unique([identifier, token])
 }
+
 
 enum SubscriptionStatus {
   FREE

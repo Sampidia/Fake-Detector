@@ -307,4 +307,47 @@ host: process.env.SMTP_HOST || 'smtp.gmail.com'
 
 ---
 
+## 🆕 NEW: Vercel Dynamic Server Usage Issues (2024)
+
+### 🚨 Common Problem
+Vercel Static Generation Errors like:
+```
+Dynamic server usage: Route /api/something couldn't be rendered statically because it used `headers`
+```
+
+### ✅ Quick Fix: Add 'force-dynamic' to API Routes
+**For ANY API route that uses:**
+- `headers()` function
+- User authentication (`auth()` from NextAuth)
+- Request-specific data (cookies, headers, etc.)
+- Dynamic responses based on user context
+
+```typescript
+// ✅ ADD THIS TO YOUR API ROUTE
+export const dynamic = 'force-dynamic'
+
+// Example in your route.ts file:
+export async function GET(request: Request) {
+  const headers = request.headers // This needs force-dynamic
+  return NextResponse.json({ success: true })
+}
+
+// Also set force-dynamic
+export const dynamic = 'force-dynamic'
+```
+
+### 🔍 Affected Routes (Based on Vercel Logs)
+1. `/api/admin/ai-providers` - Uses headers for auth
+2. `/api/admin/check-access` - Uses headers for session
+3. `/api/admin/stats` - Uses headers for user data
+
+### ✅ Verification
+After adding `export const dynamic = 'force-dynamic'`:
+- ✅ Service works normally
+- ✅ No build errors
+- ✅ Vercel deployment succeeds
+- ✅ API functions correctly
+
+---
+
 *This guide evolves with the project. Please add new rules as you identify patterns and avoid repeating mistakes.*

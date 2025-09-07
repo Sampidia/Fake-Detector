@@ -3,6 +3,7 @@ import type { JWT } from "next-auth/jwt"
 import Google from "next-auth/providers/google"
 import { ensureUserExists, getUserWithBalance } from "./auth-db"
 
+// FIXED CONFIGURATION - NextAuth 5 with App Router
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google({

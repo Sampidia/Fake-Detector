@@ -1,39 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import prisma from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+// Force dynamic rendering for auth-required API routes
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
   try {
     const session = await auth()
 
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Unauthorized', isAdmin: false },
+        { error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    // Check if user is admin (for now, check if email ends with admin@ domain)
     const isAdmin = session.user.email?.includes('admin@') ||
                    session.user.id === 'admin001' ||
                    session.user.email === 'admin@fakedetector.ng'
 
-    // Also check admin role in database (future implementation)
-    // const adminUser = await prisma.admin.findUnique({
-    //   where: { userId: session.user.id }
-    // })
-
     return NextResponse.json({
+      authenticated: true,
       isAdmin,
-      userId: session.user.id,
-      email: session.user.email,
-      role: isAdmin ? 'admin' : 'user'
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        pointsBalance: session.user.pointsBalance || 0
+      }
     })
 
   } catch (error) {
-    console.error('Admin check error:', error)
+    console.error('Auth check error:', error)
     return NextResponse.json(
-      { error: 'Server error', isAdmin: false },
+      { error: 'Authentication check failed' },
       { status: 500 }
     )
   }
