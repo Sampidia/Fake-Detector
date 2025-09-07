@@ -22,7 +22,7 @@ export class OptimizedUserQueries {
         email: true,
         name: true,
         pointsBalance: true,
-        onboardingComplete: true,
+        // onboardingComplete: true, // Removed - field not in simplified schema
         createdAt: true
       }
     })

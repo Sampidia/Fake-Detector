@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
         id: true,
         productName: true,
         batchNumber: true,
-        createdAt: true
+        createdAt: true,
+        images: true,
+        productDescription: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -59,7 +61,7 @@ export async function GET(request: NextRequest) {
       // Find the latest CheckResult for this ProductCheck
       const latestResult = checkResults
         .filter(cr => cr.productCheckId === productCheck.id)
-        .sort((a, b) => new Date(b.scrapedAt).getTime() - new Date(a.scrapedAt).getTime())[0]
+        .sort((a, b) => new Date(b.scrapedAt || new Date(0)).getTime() - new Date(a.scrapedAt || new Date(0)).getTime())[0]
 
       return {
         id: productCheck.id,

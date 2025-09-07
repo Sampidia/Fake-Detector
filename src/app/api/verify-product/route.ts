@@ -3,6 +3,7 @@ import { EnhancedNafdacService } from '@/services/nafdac-service'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { aiRouter } from '@/services/ai/ai-router'
 
 // Security Headers Middleware
 function addSecurityHeaders(response: NextResponse) {
@@ -269,9 +270,27 @@ export async function POST(request: NextRequest) {
       userId: session.user.id
     })
 
-    // 🎯 ADVANCED TEXT MATCHING SYSTEM
-    console.log('🔍 Starting Advanced Text Matching Verification...')
+    // 🎯 ADVANCED TEXT MATCHING SYSTEM WITH AI ENHANCEMENT
+    console.log('🔍 Starting AI-Enhanced Verification...')
     const nafdacService = new EnhancedNafdacService()
+
+    // Initialize AI Router for enhanced processing
+    await aiRouter.initializeProviders()
+
+    let userPlan = 'free'
+    try {
+      const userPlanData = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { planUsers: { select: { name: true } } }
+      })
+      userPlan = userPlanData?.planUsers?.name || 'free'
+    } catch (error) {
+      console.log('⚠️ Could not fetch user plan, using free tier')
+    }
+
+    const aiEnabled = userPlan !== 'free' && process.env.ENABLE_AI_ENHANCEMENT === 'true'
+
+    console.log(`🤖 AI Enhancement: ${aiEnabled ? 'ENABLED (' + userPlan + ' plan)' : 'DISABLED (free plan)'}`)
 
     // Extract OCR text from uploaded images
     let ocrText = ''
@@ -321,7 +340,7 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           title: true,
-          cleanContent: true,
+          excerpt: true,
           url: true,
           batchNumbers: true,
           manufacturer: true,
@@ -349,7 +368,7 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           title: true,
-          cleanContent: true,
+          excerpt: true,
           url: true,
           batchNumbers: true,
           manufacturer: true,
@@ -369,7 +388,7 @@ export async function POST(request: NextRequest) {
       contentMatches = await prisma.nafdacAlert.findMany({
         where: {
           active: true,
-          cleanContent: {
+          excerpt: {
             contains: searchText.split(' ')[0]?.toLowerCase(),
             mode: 'insensitive'
           }
@@ -377,7 +396,7 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           title: true,
-          cleanContent: true,
+          excerpt: true,
           url: true,
           batchNumbers: true,
           manufacturer: true,
@@ -450,12 +469,109 @@ export async function POST(request: NextRequest) {
       alertsFound: matchingAlerts.length
     }
 
-    console.log('🎯 Verification Decision:', {
+    console.log('🎯 Basic Verification Decision:', {
       isCounterfeit: result.isCounterfeit ? 'UNSAFE' : 'SAFE',
       confidence: result.confidence + '%',
       alertsFound: result.alertsFound,
       searchTime: result.searchTime + 'ms'
     })
+
+    // 🤖 PHASE 2: AI ENHANCEMENT for paid users
+    let aiEnhanced = false
+    let aiConfidence = null
+    let aiInsights = null
+    let enhancedProductName = productName
+
+    if (aiEnabled) {
+      console.log(`🤖 Applying AI enhancement for ${userPlan} plan...`)
+
+      try {
+        // Step 1: Enhanced OCR processing for product info
+        const combinedText = `${productName} ${productDescription} ${ocrText || ''}`.trim()
+
+        // Use AI to extract and validate product information
+        const aiExtractResponse = await aiRouter.processRequest({
+          text: `Extract accurate product information from this product scan:
+${combinedText}
+
+Please identify:
+1. The correct product name (remove manufacturer names if present)
+2. Any additional product details that might help with verification
+3. Any suspicious indicators or quality concerns mentioned
+
+Return structured data about this product.`,
+          task: 'extraction'
+        }, session.user.id)
+
+        // Parse and use AI extraction results
+        if (aiExtractResponse?.extractedData?.productNames?.[0]) {
+          enhancedProductName = aiExtractResponse.extractedData.productNames[0]
+          console.log(`🔍 AI extracted product: ${enhancedProductName}`)
+        }
+
+        // Step 2: AI-powered verification enhancement if low confidence
+        if (result.confidence > 15 && result.confidence < 85) {
+          console.log(`🤔 Low confidence (${result.confidence}%) - requesting AI verification...`)
+
+          const aiVerificationPrompt = `
+Analyze this product for safety concerns using your knowledge of counterfeit detection:
+
+PRODUCT INFORMATION:
+Name: ${enhancedProductName}
+Description: ${productDescription}
+User Batch: ${userBatchNumber || 'None provided'}
+OCR Text: ${ocrText || 'None available'}
+
+NAFDAC DATABASE RESULTS:
+Alert found: ${result.isCounterfeit ? 'YES' : 'NO'}
+Confidence: ${result.confidence}%
+${result.detectedAlertDetails ? 'Alert details: ' + result.detectedAlertDetails : ''}
+
+QUESTION: Should this product be considered LEGITIMATE or SUSPECTED of being counterfeit/unsafe?
+
+Please provide:
+1. Your assessment (LEGITIMATE/SUSPECTED/CRITICAL)
+2. Reasons for your assessment (3-5 key points)
+3. Confidence score (0-100%)
+4. Any additional safety recommendations
+
+Be conservative - only flag as problematic with strong evidence.`
+
+          const aiVerifyResponse = await aiRouter.processRequest({
+            text: aiVerificationPrompt,
+            task: 'verification'
+          }, session.user.id)
+
+          if (aiVerifyResponse?.extractedData) {
+            aiEnhanced = true
+            aiConfidence = aiVerifyResponse.metadata.success ? 85 : 60
+            aiInsights = aiVerifyResponse.content
+
+            // Use AI confidence to adjust the overall result
+            const aiAssessment = aiVerifyResponse.extractedData.isCounterfeit
+            if (aiAssessment === true && result.confidence < 50) {
+              // AI thinks it's suspicious, increase confidence
+              result.confidence = Math.min(90, result.confidence + 15)
+              result.isCounterfeit = true
+              console.log(`🤖 AI override: Increased risk assessment to ${result.confidence}%`)
+            } else if (aiAssessment === false && result.confidence > 70) {
+              // AI thinks it's safe, decrease confidence of alert
+              result.confidence = Math.max(20, result.confidence - 20)
+              if (result.confidence < 30) {
+                result.isCounterfeit = false
+                console.log(`🤖 AI override: Reduced risk assessment to ${result.confidence}%`)
+              }
+            }
+          }
+        }
+
+        console.log(`✅ AI Enhancement complete. Enhanced: ${aiEnhanced}, AI Confidence: ${aiConfidence || 'N/A'}`)
+
+      } catch (aiError) {
+        console.warn('⚠️ AI enhancement failed:', aiError)
+        // Continue without AI enhancement - don't break the flow
+      }
+    }
 
     // STAGE 3: Enhanced validation for edge cases
     if (result.confidence > 10 && result.confidence < 70) {
@@ -553,12 +669,24 @@ export async function POST(request: NextRequest) {
       } as any
     })
 
+    // Prepare final response
     const response = {
       resultId: savedResult.id,
       ...result,
       newBalance: user.pointsBalance - 1,
       timestamp: new Date().toISOString(),
-      verificationMethod: "Conservative NAFDAC Database Only"
+      verificationMethod: aiEnhanced
+        ? `AI-Enhanced Verification (${userPlan} Plan)`
+        : "Conservative NAFDAC Database Only",
+
+      // Include AI enhancements for paid users
+      ...(aiEnhanced && {
+        aiEnhanced: true,
+        aiConfidence: aiConfidence,
+        aiInsights: aiInsights,
+        enhancedProductName: enhancedProductName,
+        planUsed: userPlan
+      })
     }
 
     logSecurityEvent('Verification completed successfully', {

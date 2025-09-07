@@ -32,10 +32,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         id: true,
         productName: true,
         productDescription: true,
-        batchNumber: true,
         images: true,
         createdAt: true,
-        pointsUsed: true
+        pointsUsed: true,
+        batchNumber: true
       }
     })
 
@@ -61,8 +61,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         batchNumber: true,
         alertType: true,
         confidence: true,
-        scrapedAt: true,
-        images: true
+        scrapedAt: true
       },
       orderBy: {
         scrapedAt: 'desc' // Get the most recent result

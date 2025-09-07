@@ -135,8 +135,6 @@ export class VectorSimilaritySearch {
           excerpt: true,
           url: true,
           scrapedAt: true,
-          embed_title: true,
-          embed_content: true,
           productNames: true,
           batchNumbers: true
         }
@@ -158,17 +156,8 @@ export class VectorSimilaritySearch {
         let matchType: 'SEMANTIC' | 'EXACT' | 'BATCH' | 'HYBRID' = 'SEMANTIC'
         let confidence = 0
 
-        // Check title embedding similarity
-        if (alert.embed_title && Array.isArray(alert.embed_title) && alert.embed_title.length > 0) {
-          const titleSimilarity = this.cosineSimilarity(queryEmbedding, alert.embed_title as number[])
-          maxSimilarity = Math.max(maxSimilarity, titleSimilarity)
-        }
-
-        // Check content embedding similarity
-        if (alert.embed_content && Array.isArray(alert.embed_content) && alert.embed_content.length > 0) {
-          const contentSimilarity = this.cosineSimilarity(queryEmbedding, alert.embed_content as number[])
-          maxSimilarity = Math.max(maxSimilarity, contentSimilarity)
-        }
+        // Embedding similarity currently disabled - would require embed_title and embed_content fields
+        // For now, rely on fuzzy string matching
 
         // Exact product name match check
         if (productName && alert.productNames.some(
@@ -346,8 +335,7 @@ export class VectorSimilaritySearch {
               severity: true,
               productNames: true,
               batchNumbers: true,
-              manufacturer: true,
-              drugNames: true
+              manufacturer: true
             }
           })
 
@@ -357,8 +345,7 @@ export class VectorSimilaritySearch {
               severity: alert.severity as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
               manufacturer: alert.manufacturer,
               affectedProducts: alert.productNames,
-              affectedBatches: alert.batchNumbers,
-              drugNames: alert.drugNames
+              affectedBatches: alert.batchNumbers
             })
           }
         } catch (error) {
@@ -572,14 +559,8 @@ export class VectorSimilaritySearch {
       const [totalAlerts, activeAlerts, alertsWithEmbeddings] = await Promise.all([
         prisma.nafdacAlert.count(),
         prisma.nafdacAlert.count({ where: { active: true } }),
-        prisma.nafdacAlert.count({
-          where: {
-            AND: [
-              { active: true },
-              { embed_content: { not: null as any } }
-            ]
-          }
-        })
+        // Embedding functionality not yet implemented - return 0 for now
+        Promise.resolve(0)
       ])
 
       const lastAlert = await prisma.nafdacAlert.findFirst({

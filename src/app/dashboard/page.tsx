@@ -505,7 +505,7 @@ export default function DashboardPage() {
                     <Link href="/search">
                       <Button variant="outline" className="w-full">
                         <Eye className="w-4 h-4 mr-2" />
-                        View All {stats.totalScans} Results
+                        View All Results
                       </Button>
                     </Link>
                   </div>

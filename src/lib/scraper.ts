@@ -376,14 +376,11 @@ export class NafdacSimpleScraper {
             excerpt: alertData.excerpt,
             date: alertData.date,
             fullContent: alertData.fullContent,
-            cleanContent: alertData.fullContent, // Use fullContent as cleanContent for now
             productNames: alertData.productNames,
             batchNumbers: alertData.batchNumbers,
-            drugNames: alertData.productNames, // Use productNames as drugNames for now
-            batchNumber: alertData.batchNumbers.length > 0 ? alertData.batchNumbers[0] : null,
+            manufacturer: alertData.productNames.length > 0 ? alertData.productNames[0] : null,
             alertType: "PUBLIC_ALERT",
             category: "recalls",
-            lastUpdated: new Date(),
             scrapedAt: new Date()
           }
         })
@@ -398,23 +395,14 @@ export class NafdacSimpleScraper {
             excerpt: alertData.excerpt,
             date: alertData.date,
             fullContent: alertData.fullContent,
-            cleanContent: alertData.fullContent, // Use fullContent as cleanContent for now
+            aiConfidence: 0.8,
             productNames: alertData.productNames,
-            brandNames: [], // Empty for now
+
             batchNumbers: alertData.batchNumbers,
-            serialNumbers: [], // Empty for now
-            categories: ["medicines"], // Default category
-            severity: "MEDIUM", // Default severity
-            regions: [], // Empty for now
-            drugNames: alertData.productNames, // Use productNames as drugNames for now
-            expiryDates: [], // Empty for now
-            embed_title: undefined, // Skip embeddings for now
-            embed_content: undefined, // Skip embeddings for now
-            similarity_score: 0.5, // Default similarity score
-            batchNumber: alertData.batchNumbers.length > 0 ? alertData.batchNumbers[0] : null,
+            manufacturer: alertData.productNames.length > 0 ? alertData.productNames[0] : null,
             alertType: "PUBLIC_ALERT",
             category: "recalls",
-            region: "Nigeria", // Default region
+            severity: "MEDIUM",
             active: true
           }
         })

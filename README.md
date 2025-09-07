@@ -129,6 +129,10 @@ Built for Vercel deployment with:
 
 This project is licensed under the MIT License.
 
+## Emoji Favicons > eye in speech bubble
+
+The emoji graphics are from the open source project Twemoji. The graphics are copyright 2020 Twitter, Inc and other contributors.
+
 ## 🤝 Contributing
 
 1. Fork the project
